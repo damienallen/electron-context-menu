@@ -1,9 +1,9 @@
 'use strict';
-const electron = require('electron');
+const electron = require('@electron/remote');
 const cliTruncate = require('cli-truncate');
 const {download} = require('electron-dl');
-const isDev = require('electron-is-dev');
 
+const isDev = !app.isPackaged;
 const webContents = win => win.webContents || (win.id && win);
 
 const decorateMenuItem = menuItem => {
@@ -318,10 +318,6 @@ const create = (win, options) => {
 };
 
 module.exports = (options = {}) => {
-	if (process.type === 'renderer') {
-		throw new Error('Cannot use electron-context-menu in the renderer process!');
-	}
-
 	let isDisposed = false;
 	const disposables = [];
 
