@@ -36,8 +36,11 @@ contextMenu({
 		}
 	],
 	append: () => {},
+	showSelectAll: true,
 	showCopyImageAddress: true,
 	showSaveImageAs: true,
+	showCopyVideoAddress: true,
+	showSaveVideoAs: true,
 	showInspectElement: false,
 	showSaveLinkAs: true
 });

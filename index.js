@@ -35,7 +35,7 @@ const create = (win, options) => {
 		}
 
 		const {editFlags} = props;
-		const hasText = props.selectionText.trim().length > 0;
+		const hasText = props.selectionText.length > 0;
 		const isLink = Boolean(props.linkURL);
 		const can = type => editFlags[`can${type}`] && hasText;
 
@@ -119,6 +119,13 @@ const create = (win, options) => {
 					}
 				}
 			}),
+			selectAll: decorateMenuItem({
+				id: 'selectAll',
+				label: 'Select &All',
+				click() {
+					webContents(win).selectAll();
+				}
+			}),
 			saveImage: decorateMenuItem({
 				id: 'saveImage',
 				label: 'Save I&mage',
@@ -132,6 +139,24 @@ const create = (win, options) => {
 				id: 'saveImageAs',
 				label: 'Sa&ve Image As…',
 				visible: props.mediaType === 'image',
+				click(menuItem) {
+					props.srcURL = menuItem.transform ? menuItem.transform(props.srcURL) : props.srcURL;
+					download(win, props.srcURL, {saveAs: true});
+				}
+			}),
+			saveVideo: decorateMenuItem({
+				id: 'saveVideo',
+				label: 'Save Vide&o',
+				visible: props.mediaType === 'video',
+				click(menuItem) {
+					props.srcURL = menuItem.transform ? menuItem.transform(props.srcURL) : props.srcURL;
+					download(win, props.srcURL);
+				}
+			}),
+			saveVideoAs: decorateMenuItem({
+				id: 'saveVideoAs',
+				label: 'Save Video& As…',
+				visible: props.mediaType === 'video',
 				click(menuItem) {
 					props.srcURL = menuItem.transform ? menuItem.transform(props.srcURL) : props.srcURL;
 					download(win, props.srcURL, {saveAs: true});
@@ -180,6 +205,19 @@ const create = (win, options) => {
 					});
 				}
 			}),
+			copyVideoAddress: decorateMenuItem({
+				id: 'copyVideoAddress',
+				label: 'Copy Video Ad&dress',
+				visible: props.mediaType === 'video',
+				click(menuItem) {
+					props.srcURL = menuItem.transform ? menuItem.transform(props.srcURL) : props.srcURL;
+
+					electron.clipboard.write({
+						bookmark: props.srcURL,
+						text: props.srcURL
+					});
+				}
+			}),
 			inspect: () => ({
 				id: 'inspect',
 				label: 'I&nspect Element',
@@ -200,6 +238,7 @@ const create = (win, options) => {
 		};
 
 		const shouldShowInspectElement = typeof options.showInspectElement === 'boolean' ? options.showInspectElement : isDev;
+		const shouldShowSelectAll = options.showSelectAll || (options.showSelectAll !== false && process.platform !== 'darwin');
 
 		function word(suggestion) {
 			return {
@@ -240,13 +279,17 @@ const create = (win, options) => {
 			defaultActions.cut(),
 			defaultActions.copy(),
 			defaultActions.paste(),
+			shouldShowSelectAll && defaultActions.selectAll(),
 			defaultActions.separator(),
 			options.showSaveImage && defaultActions.saveImage(),
 			options.showSaveImageAs && defaultActions.saveImageAs(),
 			options.showCopyImage !== false && defaultActions.copyImage(),
 			options.showCopyImageAddress && defaultActions.copyImageAddress(),
+			options.showSaveVideo && defaultActions.saveVideo(),
+			options.showSaveVideoAs && defaultActions.saveVideoAs(),
+			options.showCopyVideoAddress && defaultActions.copyVideoAddress(),
 			defaultActions.separator(),
-			defaultActions.copyLink(),
+			options.showCopyLink !== false && defaultActions.copyLink(),
 			options.showSaveLinkAs && defaultActions.saveLinkAs(),
 			defaultActions.separator(),
 			shouldShowInspectElement && defaultActions.inspect(),
